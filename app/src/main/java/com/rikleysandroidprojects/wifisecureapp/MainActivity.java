@@ -215,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener{
 //    }
 
     private static final int REQUEST_WRITE_STORAGE = 112;
+    public static final int REQUEST_COARSE_LOCATION = 113;
 @Override
 public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -222,6 +223,17 @@ public void onRequestPermissionsResult(int requestCode, String[] permissions, in
     {
         case REQUEST_WRITE_STORAGE: {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                //reload my activity with permission granted or use the features what required the permission
+                this.recreate();
+            } else
+            {
+                Toast.makeText(this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        case REQUEST_COARSE_LOCATION: {
+            if (grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED)
             {
                 //reload my activity with permission granted or use the features what required the permission
                 this.recreate();

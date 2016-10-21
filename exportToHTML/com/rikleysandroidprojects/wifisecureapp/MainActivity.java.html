@@ -1,0 +1,271 @@
+<html>
+<head>
+<title>MainActivity.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(0,0,128); font-weight: bold; }
+.s1 { }
+.s2 { color: rgb(128,128,128); font-style: italic; }
+.s3 { color: rgb(0,128,0); font-weight: bold; }
+.s4 { color: rgb(0,0,255); }
+</style>
+</head>
+<BODY BGCOLOR="#ffffff">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+MainActivity.java</FONT>
+</center></TD></TR></TABLE>
+<pre>
+
+<span class="s0">package </span><span class="s1">com.rikleysandroidprojects.wifisecureapp; 
+ 
+</span><span class="s0">import </span><span class="s1">android.Manifest; 
+</span><span class="s0">import </span><span class="s1">android.content.BroadcastReceiver; 
+</span><span class="s0">import </span><span class="s1">android.content.Context; 
+</span><span class="s0">import </span><span class="s1">android.content.Intent; 
+</span><span class="s0">import </span><span class="s1">android.content.IntentFilter; 
+</span><span class="s0">import </span><span class="s1">android.content.pm.PackageManager; 
+</span><span class="s0">import </span><span class="s1">android.graphics.Bitmap; 
+</span><span class="s0">import </span><span class="s1">android.net.wifi.ScanResult; 
+</span><span class="s0">import </span><span class="s1">android.net.wifi.WifiConfiguration; 
+</span><span class="s0">import </span><span class="s1">android.net.wifi.WifiInfo; 
+</span><span class="s0">import </span><span class="s1">android.net.wifi.WifiManager; 
+</span><span class="s0">import </span><span class="s1">android.os.RemoteException; 
+</span><span class="s0">import </span><span class="s1">android.support.v4.app.ActivityCompat; 
+</span><span class="s0">import </span><span class="s1">android.support.v4.content.ContextCompat; 
+</span><span class="s0">import </span><span class="s1">android.support.v7.app.AppCompatActivity; 
+</span><span class="s0">import </span><span class="s1">android.os.Bundle; 
+</span><span class="s0">import </span><span class="s1">android.util.Log; 
+</span><span class="s0">import </span><span class="s1">android.view.View; 
+</span><span class="s0">import </span><span class="s1">android.view.View.OnClickListener; 
+</span><span class="s0">import </span><span class="s1">android.widget.Button; 
+</span><span class="s0">import </span><span class="s1">android.widget.TextView; 
+</span><span class="s0">import </span><span class="s1">android.widget.Toast; 
+ 
+</span><span class="s0">import </span><span class="s1">java.io.BufferedWriter; 
+</span><span class="s0">import </span><span class="s1">java.io.File; 
+</span><span class="s0">import </span><span class="s1">java.io.FileWriter; 
+</span><span class="s0">import </span><span class="s1">java.io.IOException; 
+</span><span class="s0">import </span><span class="s1">java.util.List; 
+ 
+</span><span class="s0">public class </span><span class="s1">MainActivity </span><span class="s0">extends </span><span class="s1">AppCompatActivity </span><span class="s0">implements </span><span class="s1">OnClickListener{ 
+ 
+    </span><span class="s0">public </span><span class="s1">WifiManager wifiManager; 
+ 
+    </span><span class="s0">private </span><span class="s1">TextView txtStatus; 
+    </span><span class="s0">private </span><span class="s1">TextView txtWiFiInfo; 
+    </span><span class="s0">private </span><span class="s1">Button btnScan; 
+    </span><span class="s0">private </span><span class="s1">Button btnScanAll; 
+ 
+    </span><span class="s0">private </span><span class="s1">WifiConfiguration wifiCurrConfig; 
+    </span><span class="s0">private </span><span class="s1">BroadcastReceiver wifiReceiver; 
+ 
+    @Override 
+    </span><span class="s0">protected void </span><span class="s1">onCreate(Bundle savedInstanceState) { 
+        </span><span class="s0">super</span><span class="s1">.onCreate(savedInstanceState); 
+        setContentView(R.layout.activity_main); 
+ 
+        </span><span class="s2">// Set up UI widgets</span><span class="s1"> 
+        txtStatus = (TextView) findViewById(R.id.txtStatus); 
+        txtWiFiInfo = (TextView) findViewById(R.id.txtWiFiInfo); 
+        btnScan = (Button) findViewById(R.id.btnScan); 
+        btnScan.setOnClickListener(</span><span class="s0">this</span><span class="s1">); 
+        btnScanAll = (Button) findViewById(R.id.btnScanAll); 
+        btnScanAll.setOnClickListener(</span><span class="s0">this</span><span class="s1">); 
+ 
+        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE); 
+ 
+        </span><span class="s0">if </span><span class="s1">(wifiReceiver == </span><span class="s0">null</span><span class="s1">) { 
+            wifiReceiver = </span><span class="s0">new </span><span class="s1">ScanReceiver(</span><span class="s0">this</span><span class="s1">); 
+        } 
+ 
+        registerReceiver(wifiReceiver, </span><span class="s0">new </span><span class="s1">IntentFilter( 
+                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)); 
+    } 
+ 
+    </span><span class="s0">private void </span><span class="s1">analyzeWifiConfiguration(WifiConfiguration wifiCurrConfig) { 
+        </span><span class="s2">// Authentication processing</span><span class="s1"> 
+        </span><span class="s0">if </span><span class="s1">(wifiCurrConfig.allowedKeyManagement.get( 
+                WifiConfiguration.KeyMgmt.WPA_PSK)) { 
+            txtStatus.append(</span><span class="s3">&quot;Key Management: WPA_PSK </span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">); 
+        } 
+ 
+        </span><span class="s0">if </span><span class="s1">(wifiCurrConfig.allowedKeyManagement.equals( 
+                WifiConfiguration.KeyMgmt.IEEE8021X)) { 
+            txtStatus.append(</span><span class="s3">&quot;802.1x </span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">); 
+        } 
+ 
+        </span><span class="s0">if </span><span class="s1">(wifiCurrConfig.wepKeys[</span><span class="s4">0</span><span class="s1">] != </span><span class="s0">null</span><span class="s1">) { 
+            txtStatus.append(</span><span class="s3">&quot;WEP </span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">); 
+        } 
+ 
+        </span><span class="s0">if </span><span class="s1">(wifiCurrConfig.allowedKeyManagement.equals( 
+                WifiConfiguration.KeyMgmt.WPA_EAP)) { 
+            txtStatus.append(</span><span class="s3">&quot;WPA_EAP </span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">); 
+        } 
+ 
+        </span><span class="s0">if </span><span class="s1">(wifiCurrConfig.allowedKeyManagement.equals( 
+                WifiConfiguration.KeyMgmt.NONE)) { 
+            txtStatus.append(</span><span class="s3">&quot;NONE </span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">); 
+        } 
+        </span><span class="s2">// Security Protocols</span><span class="s1"> 
+        txtStatus.append(</span><span class="s3">&quot;Protocols: &quot;</span><span class="s1">); 
+        </span><span class="s0">if </span><span class="s1">(wifiCurrConfig.allowedProtocols.get(WifiConfiguration.Protocol.RSN)) { 
+            </span><span class="s2">// IEEE 801.11i or WPA2</span><span class="s1"> 
+            txtStatus.append(</span><span class="s3">&quot;RSN &quot;</span><span class="s1">); 
+        } 
+        </span><span class="s0">if </span><span class="s1">(wifiCurrConfig.allowedProtocols.get(WifiConfiguration.Protocol.WPA)) { 
+            </span><span class="s2">//WPA or IEEE 801.11i or D3.0</span><span class="s1"> 
+            txtStatus.append(</span><span class="s3">&quot;WPA &quot;</span><span class="s1">); 
+        } 
+ 
+        txtStatus.append(</span><span class="s3">&quot;</span><span class="s0">\n \n</span><span class="s3"> RAW Config: </span><span class="s0">\n</span><span class="s3">&quot; </span><span class="s1">+wifiCurrConfig.toString()); 
+        </span><span class="s2">//  txtStatus.append(&quot;\n RAW EConfig: \n&quot; +wifiCurrConfig.enterpriseConfig.toString());</span><span class="s1"> 
+        txtStatus.append(</span><span class="s3">&quot;</span><span class="s0">\n \n</span><span class="s3">&quot;</span><span class="s1">); 
+ 
+        </span><span class="s0">boolean </span><span class="s1">hasPermission = (ContextCompat.checkSelfPermission(</span><span class="s0">this</span><span class="s1">, 
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED); 
+        </span><span class="s0">if </span><span class="s1">(!hasPermission) { 
+            ActivityCompat.requestPermissions(</span><span class="s0">this</span><span class="s1">, 
+                    </span><span class="s0">new </span><span class="s1">String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 
+                    REQUEST_WRITE_STORAGE); 
+ 
+        } 
+ 
+        appendLog(wifiCurrConfig.toString()); 
+    } 
+ 
+    </span><span class="s2">// Click on button</span><span class="s1"> 
+    </span><span class="s0">public void </span><span class="s1">onClick(View view) { 
+ 
+        </span><span class="s0">if </span><span class="s1">(view.getId() == R.id.btnScan) { 
+            Toast.makeText(</span><span class="s0">this</span><span class="s1">, </span><span class="s3">&quot;Scanning initiated&quot;</span><span class="s1">, Toast.LENGTH_LONG).show(); 
+ 
+            </span><span class="s0">if </span><span class="s1">(wifiManager.isWifiEnabled()) { 
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo(); 
+ 
+                </span><span class="s2">// Identify and collect configuration of connected WiFi network</span><span class="s1"> 
+                List&lt;WifiConfiguration&gt; allWifiConfigs = wifiManager.getConfiguredNetworks(); 
+                txtStatus.append(</span><span class="s3">&quot;Current WiFi Connection: &quot; </span><span class="s1">+ wifiInfo.getSSID().toString()); 
+                txtStatus.append(</span><span class="s3">&quot;</span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">); 
+                </span><span class="s0">for </span><span class="s1">(WifiConfiguration config : allWifiConfigs) { 
+                    </span><span class="s0">if </span><span class="s1">(config.networkId == wifiInfo.getNetworkId()) { 
+                        wifiCurrConfig = config; 
+                    } 
+                } 
+ 
+                analyzeWifiConfiguration(wifiCurrConfig); 
+ 
+            } </span><span class="s0">else </span><span class="s1">{ 
+                txtWiFiInfo.setText(</span><span class="s3">&quot;Enable WiFi&quot;</span><span class="s1">); 
+            } 
+ 
+        } 
+ 
+        </span><span class="s0">if </span><span class="s1">(view.getId() == R.id.btnScanAll) { 
+            Toast.makeText(</span><span class="s0">this</span><span class="s1">, </span><span class="s3">&quot;Scanning all Wifi in range&quot;</span><span class="s1">, Toast.LENGTH_LONG).show(); 
+ 
+            </span><span class="s0">if </span><span class="s1">(wifiManager.isWifiEnabled()) { 
+            </span><span class="s2">//    wifiManager.startScan();</span><span class="s1"> 
+                </span><span class="s2">// Identify and collect configuration of connected WiFi network</span><span class="s1"> 
+               </span><span class="s2">// txtWiFiInfo.setText(&quot; &quot;);</span><span class="s1"> 
+ 
+          </span><span class="s2">//      for (ScanResult config : scanResults) {</span><span class="s1"> 
+          </span><span class="s2">//          txtStatus.setText(config.capabilities);</span><span class="s1"> 
+  </span><span class="s2">//                  txtStatus.append(&quot;SSID: &quot; + config.SSID + &quot;\n&quot;);</span><span class="s1"> 
+    </span><span class="s2">//                txtStatus.append(&quot;PreSharedKey: &quot; + config.preSharedKey + &quot;\n&quot;);</span><span class="s1"> 
+ 
+</span><span class="s2">//                    analyzeWifiConfiguration(config);</span><span class="s1"> 
+          </span><span class="s2">//      }</span><span class="s1"> 
+ 
+            } 
+        } 
+ 
+    } 
+ 
+    @Override 
+    </span><span class="s0">public void </span><span class="s1">onStop() { 
+        </span><span class="s2">// Make sure reciever is off</span><span class="s1"> 
+        </span><span class="s0">super</span><span class="s1">.onStop(); 
+        unregisterReceiver(wifiReceiver); 
+    } 
+ 
+    @Override 
+    </span><span class="s0">public void </span><span class="s1">onResume() { 
+        </span><span class="s0">super</span><span class="s1">.onResume(); 
+        registerReceiver(wifiReceiver, </span><span class="s0">new </span><span class="s1">IntentFilter( 
+                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)); 
+    } 
+ 
+    </span><span class="s0">public static void </span><span class="s1">appendLog(String text) { 
+ 
+        File logFile = </span><span class="s0">new </span><span class="s1">File(</span><span class="s3">&quot;sdcard/wifilog.log&quot;</span><span class="s1">); 
+        </span><span class="s0">if </span><span class="s1">(!logFile.exists()) { 
+            </span><span class="s0">try </span><span class="s1">{ 
+                logFile.createNewFile(); 
+            } </span><span class="s0">catch </span><span class="s1">(IOException e) { 
+                e.printStackTrace(); 
+            } 
+        } 
+ 
+        </span><span class="s0">try </span><span class="s1">{ 
+            BufferedWriter bufferedWriter = </span><span class="s0">new </span><span class="s1">BufferedWriter(</span><span class="s0">new </span><span class="s1">FileWriter(logFile, </span><span class="s0">true</span><span class="s1">)); 
+            bufferedWriter.append(text); 
+            bufferedWriter.newLine(); 
+            bufferedWriter.flush(); 
+            bufferedWriter.close(); 
+        } </span><span class="s0">catch </span><span class="s1">( IOException e) { 
+            e.printStackTrace(); 
+        } 
+    } 
+ 
+</span><span class="s2">//    @Override</span><span class="s1"> 
+</span><span class="s2">//    public void onRequestPermissionsResult( int requestCode,</span><span class="s1"> 
+</span><span class="s2">//                                            String permissions[],</span><span class="s1"> 
+</span><span class="s2">//                                            int[] grantResults) {</span><span class="s1"> 
+</span><span class="s2">//        switch (requestCode) {</span><span class="s1"> 
+</span><span class="s2">//            case REQUEST_COARSE_LOCATION: {</span><span class="s1"> 
+</span><span class="s2">//                if (grantResults.length &gt; 0 &amp;&amp;</span><span class="s1"> 
+</span><span class="s2">//                        grantResults[0] != PackageManager.PERMISSION_GRANTED) {</span><span class="s1"> 
+</span><span class="s2">//</span><span class="s1"> 
+</span><span class="s2">//                }</span><span class="s1"> 
+</span><span class="s2">//            }</span><span class="s1"> 
+</span><span class="s2">//        }</span><span class="s1"> 
+</span><span class="s2">//    }</span><span class="s1"> 
+ 
+    </span><span class="s0">private static final int </span><span class="s1">REQUEST_WRITE_STORAGE = </span><span class="s4">112</span><span class="s1">; 
+    </span><span class="s0">public static final int </span><span class="s1">REQUEST_COARSE_LOCATION = </span><span class="s4">113</span><span class="s1">; 
+@Override 
+</span><span class="s0">public void </span><span class="s1">onRequestPermissionsResult(</span><span class="s0">int </span><span class="s1">requestCode, String[] permissions, </span><span class="s0">int</span><span class="s1">[] grantResults) { 
+    </span><span class="s0">super</span><span class="s1">.onRequestPermissionsResult(requestCode, permissions, grantResults); 
+    </span><span class="s0">switch </span><span class="s1">(requestCode) 
+    { 
+        </span><span class="s0">case </span><span class="s1">REQUEST_WRITE_STORAGE: { 
+            </span><span class="s0">if </span><span class="s1">(grantResults.length &gt; </span><span class="s4">0 </span><span class="s1">&amp;&amp; grantResults[</span><span class="s4">0</span><span class="s1">] == PackageManager.PERMISSION_GRANTED) 
+            { 
+                </span><span class="s2">//reload my activity with permission granted or use the features what required the permission</span><span class="s1"> 
+                </span><span class="s0">this</span><span class="s1">.recreate(); 
+            } </span><span class="s0">else</span><span class="s1"> 
+            { 
+                Toast.makeText(</span><span class="s0">this</span><span class="s1">, </span><span class="s3">&quot;The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission&quot;</span><span class="s1">, Toast.LENGTH_LONG).show(); 
+            } 
+        } 
+ 
+        </span><span class="s0">case </span><span class="s1">REQUEST_COARSE_LOCATION: { 
+            </span><span class="s0">if </span><span class="s1">(grantResults.length &gt; </span><span class="s4">0 </span><span class="s1">&amp;&amp; grantResults[</span><span class="s4">1</span><span class="s1">] == PackageManager.PERMISSION_GRANTED) 
+            { 
+                </span><span class="s2">//reload my activity with permission granted or use the features what required the permission</span><span class="s1"> 
+                </span><span class="s0">this</span><span class="s1">.recreate(); 
+            } </span><span class="s0">else</span><span class="s1"> 
+            { 
+                Toast.makeText(</span><span class="s0">this</span><span class="s1">, </span><span class="s3">&quot;The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission&quot;</span><span class="s1">, Toast.LENGTH_LONG).show(); 
+            } 
+        } 
+    } 
+ 
+} 
+}</span></pre>
+</body>
+</html>

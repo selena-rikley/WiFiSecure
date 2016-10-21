@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>ScanReceiver.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(0,0,128); font-weight: bold; }
+.s1 { }
+.s2 { color: rgb(128,128,128); font-style: italic; }
+.s3 { color: rgb(0,128,0); font-weight: bold; }
+</style>
+</head>
+<BODY BGCOLOR="#ffffff">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+ScanReceiver.java</FONT>
+</center></TD></TR></TABLE>
+<pre>
+
+<span class="s0">package </span><span class="s1">com.rikleysandroidprojects.wifisecureapp; 
+ 
+</span><span class="s0">import </span><span class="s1">android.Manifest; 
+</span><span class="s0">import </span><span class="s1">android.content.BroadcastReceiver; 
+</span><span class="s0">import </span><span class="s1">android.content.Context; 
+</span><span class="s0">import </span><span class="s1">android.content.Intent; 
+</span><span class="s0">import </span><span class="s1">android.content.pm.PackageManager; 
+</span><span class="s0">import </span><span class="s1">android.net.wifi.ScanResult; 
+</span><span class="s0">import </span><span class="s1">android.support.v4.app.ActivityCompat; 
+</span><span class="s0">import </span><span class="s1">android.support.v4.content.ContextCompat; 
+</span><span class="s0">import </span><span class="s1">android.util.Log; 
+ 
+</span><span class="s0">import </span><span class="s1">java.util.List; 
+ 
+</span><span class="s2">/** 
+ * Created by Selena on 01/04/2016. 
+ */</span><span class="s1"> 
+</span><span class="s0">public class </span><span class="s1">ScanReceiver </span><span class="s0">extends </span><span class="s1">BroadcastReceiver { 
+    MainActivity mainActivity; 
+ 
+    </span><span class="s0">public </span><span class="s1">ScanReceiver(MainActivity main) { 
+        </span><span class="s0">super</span><span class="s1">(); 
+        mainActivity = main; 
+    } 
+ 
+    @Override 
+    </span><span class="s0">public void </span><span class="s1">onReceive(Context context, Intent intent) { 
+ 
+        Log.d(</span><span class="s3">&quot;Scanner&quot;</span><span class="s1">, </span><span class="s3">&quot;Recieve&quot;</span><span class="s1">); 
+ 
+        </span><span class="s0">if </span><span class="s1">(ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION) 
+                == PackageManager.PERMISSION_GRANTED) { 
+           List&lt;ScanResult&gt; scanResultList = mainActivity.wifiManager.getScanResults(); 
+            Log.d(</span><span class="s3">&quot;Scanner&quot;</span><span class="s1">, </span><span class="s3">&quot;Made List&quot;</span><span class="s1">); 
+        } 
+        </span><span class="s0">else </span><span class="s1">{ 
+            </span><span class="s2">// request permission</span><span class="s1"> 
+            ActivityCompat.requestPermissions(mainActivity, 
+                    </span><span class="s0">new </span><span class="s1">String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 
+                    MainActivity.REQUEST_COARSE_LOCATION); 
+        } 
+ 
+            </span><span class="s2">//for(ScanResult scanResult : wifiScanList){</span><span class="s1"> 
+                </span><span class="s2">//txtStatus.append(scanResult.SSID + &quot;\n&quot;);</span><span class="s1"> 
+ 
+            </span><span class="s2">//}</span><span class="s1"> 
+    } 
+ 
+ 
+ 
+}</span></pre>
+</body>
+</html>
